@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/fason/dev/c_plus_plus/CMake/Gclog/Log.hpp
+iostream
+-
+
+/home/fason/dev/c_plus_plus/CMake/Gclog/main.cpp
+Log.hpp
+/home/fason/dev/c_plus_plus/CMake/Gclog/Log.hpp
+
