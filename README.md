@@ -43,11 +43,6 @@ CMake use the environment variables CC and CXX to decide which
 compiler to use. If you don't set these variables yourself, the system 
 default compiler will be used.
 
-Be aware that CMake will detect which compiler was used to build each of the 
-Conan targets. 
-If you build all of your Conan targets with one compiler, and then build your 
-CMake targets with a different compiler, the project may fail to build. 
-
 To build using clang, you can use these commands:
 
     $ CC=clang CXX=clang++ ccmake ..
