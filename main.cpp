@@ -2,9 +2,9 @@
 
 int main()
 {
-    gcb::Log log;
+    gc::Log log;
 
-    log.setLevel(gcb::Log::ERROR);
+    log.setLevel(gc::Log::ERROR);
     log.warn("hello");
     log.info("hello");
     log.error("hello");

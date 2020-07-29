@@ -22,7 +22,7 @@
 
 #include <iostream>
 
-namespace gcb
+namespace gc
 {
     class Log {
     public:
