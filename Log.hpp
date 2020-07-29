@@ -26,10 +26,11 @@ namespace gcb
 {
     class Log {
     public:
-        enum Level {Error = 0, Warning, Info};
+
+        enum Level : char {ERROR = 0, WARNING, INFO};
 
     private:
-        Level m_logLevel{Info};
+        Level m_logLevel{INFO};
 
     public:
         // Methods
@@ -40,21 +41,21 @@ namespace gcb
 
         void error(const char *message)
         {
-            if (m_logLevel >= Error) {
+            if (m_logLevel >= ERROR) {
                 std::cout << "[ERROR]: " << message << '\n';
             }
         }
 
         void warn(const char *message)
         {
-            if (m_logLevel >= Warning) {
+            if (m_logLevel >= WARNING) {
                 std::cout << "[WARNING]: " << message << '\n';
             }
         }
 
         void info(const char *message)
         {
-            if (m_logLevel >= Info) {
+            if (m_logLevel >= INFO) {
                 std::cout << "[INFO]: " << message << '\n';
             }
 
