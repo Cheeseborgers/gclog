@@ -39,7 +39,7 @@ project:
 
 ### Build using an alternate compiler
 
-Conan and CMake use the environment variables CC and CXX to decide which 
+CMake use the environment variables CC and CXX to decide which 
 compiler to use. If you don't set these variables yourself, the system 
 default compiler will be used.
 
