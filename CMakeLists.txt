@@ -3,4 +3,4 @@ project(Gclog)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(Gclog main.cpp Log.hpp)
+add_executable(Gclog main.cpp Logger.hpp)

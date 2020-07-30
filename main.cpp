@@ -1,14 +1,24 @@
-#include "Log.hpp"
+#include "Logger.hpp"
+
+using namespace gc;
 
 int main()
 {
-    gc::Log log;
+    ConsoleLogger log;
 
-    log.setLevel(gc::Log::INFO_LEVEL);
-    log.setConsoleColouringStyle(gc::Log::ColorizeConsoleOutputStyle::ALL);
+    log.setLevel(Logger::INFO_LEVEL);
+    log.setConsoleColourStyle(Logger::ColorizeConsoleOutputStyle::LEVEL_ONLY);
+    log.setAppendDateTime(Logger::AppendDateTimeFormat::TIME_ONLY);
     log.warn("hello");
+
+    log.setConsoleColourStyle(Logger::ColorizeConsoleOutputStyle::LEVEL_ONLY);
+    log.setAppendDateTime(Logger::AppendDateTimeFormat::DATE_ONLY);
     log.info("hello");
+
+    log.setConsoleColourStyle(Logger::ColorizeConsoleOutputStyle::ALL);
+    log.setAppendDateTime(Logger::AppendDateTimeFormat::DATE_TIME);
     log.error("hello");
 
     return 0;
 }
+
