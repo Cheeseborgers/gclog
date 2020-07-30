@@ -114,13 +114,10 @@ public:
 class Logger
 {
 public:
-    enum LogLevel : char {
-        ERROR_LEVEL = 0, WARNING_LEVEL, INFO_LEVEL
+    enum class LogLevel : char {
+        ERROR = 0, WARNING, INFO
     };
-    enum ColorizeConsoleOutputStyle : char {
-        NO_COLOR = 0, LEVEL_ONLY, ALL
-    };
-    enum AppendDateTimeFormat : char {
+    enum class AppendDateTimeFormat : char {
         NONE = 0, TIME_ONLY, DATE_ONLY, DATE_TIME
     };
 
@@ -137,8 +134,8 @@ public:
     Logger& operator=(Logger&&) = delete;      // move assignment
 
 private:
-    AppendDateTimeFormat m_dateTimeFormat{DATE_TIME};
-    LogLevel m_logLevel{INFO_LEVEL};
+    AppendDateTimeFormat m_dateTimeFormat{AppendDateTimeFormat::DATE_TIME};
+    LogLevel m_logLevel{LogLevel::INFO};
 
 public:
     // Setters -----------------------------------------------------------------
@@ -156,17 +153,17 @@ public:
         std::string date_time{""};
 
         switch (m_dateTimeFormat) {
-            case TIME_ONLY:
+            case AppendDateTimeFormat::TIME_ONLY:
                 date_time += Time::getTime();
                 break;
-            case DATE_ONLY:
+            case AppendDateTimeFormat::DATE_ONLY:
                 date_time += Time::getDate();
                 break;
-            case DATE_TIME:
+            case AppendDateTimeFormat::DATE_TIME:
                 date_time += Time::getTime();
                 date_time += Time::getDate();
                 break;
-            case NONE:
+            case AppendDateTimeFormat::NONE:
                 break;
         }
 
@@ -185,6 +182,10 @@ public:
 class ConsoleLogger final : public Logger
 {
 public:
+    enum class ColorizeConsoleOutput : char {
+        NO_COLOR = 0, LEVEL_ONLY, ALL
+    };
+
     ConsoleLogger() : Logger() {}
     ConsoleLogger(LogLevel logLevel) : Logger(logLevel) {}
     ConsoleLogger(LogLevel logLevel, AppendDateTimeFormat dateTimeFormat)
@@ -208,11 +209,11 @@ public:
               m_infoColor(infoColor),
               Logger(logLevel, dateTimeFormat) {}
     ConsoleLogger(LogLevel logLevel,
-            AppendDateTimeFormat dateTimeFormat,
-            ColorizeConsoleOutputStyle colorizeOutput,
-            ConsoleColor errorColor,
-            ConsoleColor warnColor,
-            ConsoleColor infoColor)
+                  AppendDateTimeFormat dateTimeFormat,
+                  ColorizeConsoleOutput colorizeOutput,
+                  ConsoleColor errorColor,
+                  ConsoleColor warnColor,
+                  ConsoleColor infoColor)
             : m_errorColor(errorColor),
               m_warnColor(warnColor),
               m_infoColor(infoColor),
@@ -225,7 +226,8 @@ ConsoleLogger(const ConsoleLogger&) = delete;      // non construction-copyable
     ConsoleLogger& operator=(ConsoleLogger&&) = delete;      // move assignment
 
 private:
-    ColorizeConsoleOutputStyle m_colorizeStyle{NO_COLOR};
+    ColorizeConsoleOutput m_colorizeStyle{
+            ColorizeConsoleOutput::NO_COLOR};
 
     ConsoleColor m_defaultColor{FG_DEFAULT};
     ConsoleColor m_errorColor{FG_RED};
@@ -234,28 +236,28 @@ private:
 
 public:
     // ---------------------------------------------------------------------
-    void setConsoleColourStyle(ColorizeConsoleOutputStyle style)
+    void setConsoleColourStyle(ColorizeConsoleOutput style)
     {
         m_colorizeStyle = style;
     }
     // ---------------------------------------------------------------------
     void error(const std::string& message)
     {
-        if (getLogLevel() >= ERROR_LEVEL)
+        if (getLogLevel() >= LogLevel::ERROR)
         {
             std::string date_time = getDateTimeString();
 
             switch (m_colorizeStyle)
             {
-                case NO_COLOR:
+                case ColorizeConsoleOutput::NO_COLOR:
                     std::cout << m_defaultColor << "[ERROR]: "
                               << m_defaultColor << message << date_time << '\n';
                     break;
-                case LEVEL_ONLY:
+                case ColorizeConsoleOutput::LEVEL_ONLY:
                     std::cout << m_errorColor << "[ERROR]: "
                               << m_defaultColor << message << date_time << '\n';
                     break;
-                case ALL:
+                case ColorizeConsoleOutput::ALL:
                     std::cout << m_errorColor << "[ERROR]: " << message
                               <<  date_time << '\n';
                     break;
@@ -265,21 +267,21 @@ public:
     // ---------------------------------------------------------------------
     void warn(const std::string& message)
     {
-        if (getLogLevel() >= WARNING_LEVEL)
+        if (getLogLevel() >= LogLevel::WARNING)
         {
             std::string date_time = getDateTimeString();
 
             switch (m_colorizeStyle)
             {
-                case NO_COLOR:
+                case ColorizeConsoleOutput::NO_COLOR:
                     std::cout << m_defaultColor << "[WARNING]: "
                               << m_defaultColor << message << date_time << '\n';
                     break;
-                case LEVEL_ONLY:
+                case ColorizeConsoleOutput::LEVEL_ONLY:
                     std::cout << m_warnColor << "[WARNING]: "
                               << m_defaultColor << message << date_time << '\n';
                     break;
-                case ALL:
+                case ColorizeConsoleOutput::ALL:
                     std::cout << m_warnColor << "[WARNING]: " << message
                               <<  date_time << '\n';
                     break;
@@ -289,21 +291,21 @@ public:
     // ---------------------------------------------------------------------
     void info(const std::string& message)
     {
-        if (getLogLevel() >= INFO_LEVEL)
+        if (getLogLevel() >= LogLevel::INFO)
         {
             std::string date_time = getDateTimeString();
 
             switch (m_colorizeStyle)
             {
-                case NO_COLOR:
+                case ColorizeConsoleOutput::NO_COLOR:
                     std::cout << m_defaultColor << "[INFO]: "
                               << m_defaultColor << message << date_time << '\n';
                     break;
-                case LEVEL_ONLY:
+                case ColorizeConsoleOutput::LEVEL_ONLY:
                     std::cout << m_infoColor << "[INFO]: "
                               << m_defaultColor << message << date_time << '\n';
                     break;
-                case ALL:
+                case ColorizeConsoleOutput::ALL:
                     std::cout << m_infoColor << "[INFO]: " << message
                               <<  date_time << '\n';
                     break;
