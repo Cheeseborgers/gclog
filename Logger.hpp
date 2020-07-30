@@ -30,7 +30,7 @@
 #include <mutex>
 
 namespace gc {
-    enum ConsoleColorCode : char {
+    enum ConsoleColorCode : unsigned char {
         FG_DEFAULT [[maybe_unused]] = 39,
         FG_BLACK [[maybe_unused]] = 30,
         FG_RED [[maybe_unused]] = 31,
@@ -48,10 +48,24 @@ namespace gc {
         FG_LIGHT_MAGENTA [[maybe_unused]] = 95,
         FG_LIGHT_CYAN [[maybe_unused]] = 96,
         FG_WHITE [[maybe_unused]] = 97,
+        FG_ORANGE [[maybe_unused]] = 166,
+        BG_DEFAULT [[maybe_unused]] = 49,
         BG_RED [[maybe_unused]] = 41,
         BG_GREEN [[maybe_unused]] = 42,
+        BG_YELLOW [[maybe_unused]] = 43,
         BG_BLUE [[maybe_unused]] = 44,
-        BG_DEFAULT [[maybe_unused]] = 49
+        BG_MAGENTA [[maybe_unused]] = 45,
+        BG_CYAN [[maybe_unused]] = 46,
+        BG_LIGHT_GRAY [[maybe_unused]] = 47,
+        BG_DARK_GRAY [[maybe_unused]] = 90,
+        BG_LIGHT_RED [[maybe_unused]] = 101,
+        BG_LIGHT_GREEN [[maybe_unused]] = 102,
+        BG_LIGHT_YELLOW [[maybe_unused]] = 103,
+        BG_LIGHT_BLUE [[maybe_unused]] = 104,
+        BG_LIGHT_MAGENTA [[maybe_unused]] = 105,
+        BG_LIGHT_CYAN [[maybe_unused]] = 106,
+        BG_WHITE [[maybe_unused]] = 107,
+        BG_ORANGE [[maybe_unused]] = 214
     };
 
 // -----------------------------------------------------------------------------
@@ -131,7 +145,7 @@ public:
             : m_logLevel(logLevel) {}
 
     Logger(LogLevel logLevel, AppendDateTimeFormat dateTimeFormat)
-            : m_logLevel(logLevel), m_dateTimeFormat(dateTimeFormat) {}
+            : m_dateTimeFormat(dateTimeFormat), m_logLevel(logLevel) {}
 
     virtual ~Logger() = default;
 
@@ -150,7 +164,7 @@ private:
 public:
     // Setters -----------------------------------------------------------------
     //
-    void setLevel(LogLevel level) { m_logLevel = level; }
+    [[maybe_unused]] void setLevel(LogLevel level) { m_logLevel = level; }
 
     // -------------------------------------------------------------------------
     void setAppendDateTime(AppendDateTimeFormat level)
@@ -186,15 +200,15 @@ public:
 
     // Base Logger virtual methods, not pure virtual so you can use
     // as a null logger if you want.
-    virtual void trace(const std::string &message) {};
+    virtual void trace([[maybe_unused]] const std::string &message) {};
 
-    virtual void debug(const std::string &message) {};
+    virtual void debug([[maybe_unused]] const std::string &message) {};
 
-    virtual void error(const std::string &message) {};
+    virtual void error([[maybe_unused]] const std::string &message) {};
 
-    virtual void warn(const std::string &message) {};
+    virtual void warn([[maybe_unused]] const std::string &message) {};
 
-    virtual void info(const std::string &message) {};
+    virtual void info([[maybe_unused]] const std::string &message) {};
 };
 // -----------------------------------------------------------------------------
 class ConsoleLogger final : public Logger
@@ -205,37 +219,41 @@ public:
     };
 
     ConsoleLogger() = delete;
+
     [[maybe_unused]] explicit ConsoleLogger(LogLevel logLevel)
-        : Logger(logLevel) {}
+            : Logger(logLevel) {}
 
     [[maybe_unused]] ConsoleLogger(
-        LogLevel logLevel, AppendDateTimeFormat dateTimeFormat)
-        : Logger(logLevel, dateTimeFormat) {}
+            LogLevel logLevel, AppendDateTimeFormat dateTimeFormat)
+            : Logger(logLevel, dateTimeFormat) {}
 
-    [[maybe_unused]] ConsoleLogger(LogLevel logLevel,
+    [[maybe_unused]] ConsoleLogger(
+            LogLevel logLevel,
             ConsoleColor errorColor,
             ConsoleColor warnColor,
             ConsoleColor infoColor)
-            : m_errorColor(errorColor),
-             m_warnColor(warnColor),
-             m_infoColor(infoColor),
-             Logger(logLevel){}
+            : Logger(logLevel),
+              m_errorColor(errorColor),
+              m_warnColor(warnColor),
+              m_infoColor(infoColor) {}
 
-    [[maybe_unused]] ConsoleLogger(LogLevel logLevel,
-                                   AppendDateTimeFormat dateTimeFormat,
-                                   ColorizeConsoleOutput colorizeOutput,
-                                   ConsoleColor traceColor,
-                                   ConsoleColor debugColor,
-                                   ConsoleColor errorColor,
-                                   ConsoleColor warnColor,
-                                   ConsoleColor infoColor)
-            : m_traceColor(traceColor),
+    [[maybe_unused]] ConsoleLogger(
+            LogLevel logLevel,
+            AppendDateTimeFormat dateTimeFormat,
+            ColorizeConsoleOutput colorizeOutput,
+            ConsoleColor traceColor,
+            ConsoleColor debugColor,
+            ConsoleColor errorColor,
+            ConsoleColor warnColor,
+            ConsoleColor infoColor)
+            : Logger(logLevel, dateTimeFormat),
+              m_colorizeStyle(colorizeOutput),
+              m_traceColor(traceColor),
               m_debugColor(debugColor),
               m_errorColor(errorColor),
               m_warnColor(warnColor),
-              m_infoColor(infoColor),
-              m_colorizeStyle(colorizeOutput),
-              Logger(logLevel, dateTimeFormat) {}
+              m_infoColor(infoColor) {}
+
 
     ConsoleLogger(const ConsoleLogger &) = delete;      // non construction-copyable
     ConsoleLogger(ConsoleLogger &&) = delete;                 // non movable
@@ -398,12 +416,11 @@ public:
         FileLogger() = delete;
 
         [[maybe_unused]] FileLogger(LogLevel logLevel, std::string filename)
-                : m_filename(std::move(filename)), Logger(logLevel) {}
+                : Logger(logLevel), m_filename(std::move(filename)) {}
 
-    protected:
+    private:
         std::string m_filename;
-        [[maybe_unused]] std::ofstream m_file;
-
+        std::ofstream m_file;
     public:
         void trace(const std::string &message) override {
             std::cout << "[TRACE]: " << message << '\n';
