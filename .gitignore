@@ -31,5 +31,16 @@
 *.out
 *.app
 
+# Ignore IDE specific files
 .idea/
+.vscode/
+*.sw*
+
+# Ignore Logs
+logs
+*.log
+logs/**
+
+# Ignore the build directory
+dist/
 build/
