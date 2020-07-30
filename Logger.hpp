@@ -124,7 +124,7 @@ public:
         NONE = 0, TIME_ONLY, DATE_ONLY, DATE_TIME
     };
 
-    Logger() = default;
+    Logger() = delete;
     explicit Logger(LogLevel logLevel)
             : m_logLevel(logLevel) {}
 
@@ -202,7 +202,7 @@ public:
         NO_COLOR = 0, LEVEL_ONLY, ALL
     };
 
-    ConsoleLogger() : Logger() {};
+    ConsoleLogger() = delete;
     [[maybe_unused]] explicit ConsoleLogger(LogLevel logLevel)
         : Logger(logLevel) {}
 
@@ -393,16 +393,14 @@ public:
 
     class FileLogger final : public Logger {
     public:
-        FileLogger() = default;
+        FileLogger() = delete;
 
-        explicit FileLogger(std::string filename)
-                : m_filename(std::move(filename)) {
-
-        }
+        [[maybe_unused]] FileLogger(LogLevel logLevel, std::string filename)
+                : m_filename(std::move(filename)), Logger(logLevel) {}
 
     protected:
         std::string m_filename;
-        std::ofstream m_file;
+        [[maybe_unused]] std::ofstream m_file;
 
     public:
         void trace(const std::string &message) override {

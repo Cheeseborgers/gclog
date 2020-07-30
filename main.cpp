@@ -24,10 +24,10 @@ using namespace gc;
 
 int main()
 {
-    ConsoleLogger log;
-    FileLogger logt;
+    ConsoleLogger log(Logger::LogLevel::ERROR);
+    FileLogger fileLogger(Logger::LogLevel::ERROR,
+                          "test.log");
 
-    log.setLevel(Logger::LogLevel::ERROR);
     log.setConsoleColourStyle(
             ConsoleLogger::ColorizeConsoleOutput::LEVEL_ONLY);
     log.setAppendDateTime(
@@ -46,7 +46,7 @@ int main()
     log.setAppendDateTime(Logger::AppendDateTimeFormat::DATE_TIME);
     log.error("hello");
 
-    logt.warn("hello");
+    fileLogger.warn("hello");
 
     return 0;
 }
