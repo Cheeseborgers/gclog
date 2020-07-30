@@ -1,3 +1,0 @@
-/home/fason/dev/c_plus_plus/CMake/Gclog/build/release/CMakeFiles/rebuild_cache.dir
-/home/fason/dev/c_plus_plus/CMake/Gclog/build/release/CMakeFiles/edit_cache.dir
-/home/fason/dev/c_plus_plus/CMake/Gclog/build/release/CMakeFiles/Gclog.dir

@@ -1,1 +1,0 @@
-/usr/local/gcc-9.3/bin/g++-9.3  -g   CMakeFiles/Gclog.dir/main.cpp.o  -o Gclog 
