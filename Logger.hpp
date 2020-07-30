@@ -54,7 +54,7 @@ class ConsoleColor
 private:
     ConsoleColorCode code;
 public:
-    [[maybe_unused]] ConsoleColor(ConsoleColorCode pCode) : code(pCode) {}
+    [[maybe_unused]] explicit ConsoleColor(ConsoleColorCode pCode) : code(pCode) {}
 
     friend std::ostream &
     operator<<(std::ostream &os, const ConsoleColor &mod) {
@@ -65,7 +65,7 @@ public:
 class Time
 {
 public:
-    static const std::string getTime()
+    static std::string getTime()
     {
         std::ostringstream oss;
 
@@ -88,7 +88,7 @@ public:
         return oss.str();
     }
 // -----------------------------------------------------------------------------
-    static const std::string getDate() {
+    static std::string getDate() {
         std::ostringstream oss;
 
         // Current date/time based on current system.
@@ -121,8 +121,8 @@ public:
         NONE = 0, TIME_ONLY, DATE_ONLY, DATE_TIME
     };
 
-    Logger() {}
-    Logger(LogLevel logLevel)
+    Logger() = default;
+    explicit Logger(LogLevel logLevel)
         :m_logLevel(logLevel) {}
     Logger(LogLevel logLevel, AppendDateTimeFormat dateTimeFormat)
         : m_logLevel(logLevel), m_dateTimeFormat(dateTimeFormat) {}
@@ -146,11 +146,11 @@ public:
         m_dateTimeFormat = level;
     }
     // Getters -----------------------------------------------------------------
-    LogLevel getLogLevel() const {return m_logLevel;}
+    [[nodiscard]] LogLevel getLogLevel() const {return m_logLevel;}
     // -------------------------------------------------------------------------
-    const std::string getDateTimeString()
+    std::string getDateTimeString()
     {
-        std::string date_time{""};
+        std::string date_time;
 
         switch (m_dateTimeFormat) {
             case AppendDateTimeFormat::TIME_ONLY:
@@ -186,12 +186,15 @@ public:
         NO_COLOR = 0, LEVEL_ONLY, ALL
     };
 
-    ConsoleLogger() : Logger() {}
-    ConsoleLogger(LogLevel logLevel) : Logger(logLevel) {}
-    ConsoleLogger(LogLevel logLevel, AppendDateTimeFormat dateTimeFormat)
-    : Logger(logLevel, dateTimeFormat) {}
+    ConsoleLogger() : Logger() {};
+    [[maybe_unused]] explicit ConsoleLogger(LogLevel logLevel)
+        : Logger(logLevel) {}
 
-    ConsoleLogger(LogLevel logLevel,
+    [[maybe_unused]] ConsoleLogger(
+        LogLevel logLevel, AppendDateTimeFormat dateTimeFormat)
+        : Logger(logLevel, dateTimeFormat) {}
+
+    [[maybe_unused]] ConsoleLogger(LogLevel logLevel,
             ConsoleColor errorColor,
             ConsoleColor warnColor,
             ConsoleColor infoColor)
@@ -199,7 +202,8 @@ public:
              m_warnColor(warnColor),
              m_infoColor(infoColor),
              Logger(logLevel){}
-    ConsoleLogger(LogLevel logLevel,
+
+    [[maybe_unused]] ConsoleLogger(LogLevel logLevel,
             AppendDateTimeFormat dateTimeFormat,
             ConsoleColor errorColor,
             ConsoleColor warnColor,
@@ -208,7 +212,8 @@ public:
               m_warnColor(warnColor),
               m_infoColor(infoColor),
               Logger(logLevel, dateTimeFormat) {}
-    ConsoleLogger(LogLevel logLevel,
+
+    [[maybe_unused]] ConsoleLogger(LogLevel logLevel,
                   AppendDateTimeFormat dateTimeFormat,
                   ColorizeConsoleOutput colorizeOutput,
                   ConsoleColor errorColor,
@@ -241,7 +246,7 @@ public:
         m_colorizeStyle = style;
     }
     // ---------------------------------------------------------------------
-    void error(const std::string& message)
+    void error(const std::string& message) override
     {
         if (getLogLevel() >= LogLevel::ERROR)
         {
@@ -265,7 +270,7 @@ public:
         }
     }
     // ---------------------------------------------------------------------
-    void warn(const std::string& message)
+    void warn(const std::string& message) override
     {
         if (getLogLevel() >= LogLevel::WARNING)
         {
@@ -289,7 +294,7 @@ public:
         }
     }
     // ---------------------------------------------------------------------
-    void info(const std::string& message)
+    void info(const std::string& message) override
     {
         if (getLogLevel() >= LogLevel::INFO)
         {
