@@ -25,8 +25,9 @@ using namespace gc;
 int main()
 {
     ConsoleLogger log;
+    FileLogger logt;
 
-    log.setLevel(Logger::LogLevel::INFO);
+    log.setLevel(Logger::LogLevel::ERROR);
     log.setConsoleColourStyle(
             ConsoleLogger::ColorizeConsoleOutput::LEVEL_ONLY);
     log.setAppendDateTime(
@@ -38,10 +39,14 @@ int main()
     log.setAppendDateTime(Logger::AppendDateTimeFormat::DATE_ONLY);
     log.info("hello");
 
-
     log.setConsoleColourStyle(ConsoleLogger::ColorizeConsoleOutput::ALL);
+    log.trace("hello");
+    log.debug("hello");
+
     log.setAppendDateTime(Logger::AppendDateTimeFormat::DATE_TIME);
     log.error("hello");
+
+    logt.warn("hello");
 
     return 0;
 }

@@ -23,16 +23,19 @@
 #include <iostream>
 #include <sstream>
 #include <ctime>
+#include <utility>
+#include <fstream>
+#include <mutex>
 
 namespace gc {
-enum ConsoleColorCode : char {
-    FG_DEFAULT [[maybe_unused]] = 39,
-    FG_BLACK [[maybe_unused]] = 30,
-    FG_RED [[maybe_unused]] = 31,
-    FG_GREEN [[maybe_unused]] = 32,
-    FG_YELLOW [[maybe_unused]] = 33,
-    FG_BLUE [[maybe_unused]] = 34,
-    FG_MAGENTA [[maybe_unused]] = 35,
+    enum ConsoleColorCode : char {
+        FG_DEFAULT [[maybe_unused]] = 39,
+        FG_BLACK [[maybe_unused]] = 30,
+        FG_RED [[maybe_unused]] = 31,
+        FG_GREEN [[maybe_unused]] = 32,
+        FG_YELLOW [[maybe_unused]] = 33,
+        FG_BLUE [[maybe_unused]] = 34,
+        FG_MAGENTA [[maybe_unused]] = 35,
     FG_CYAN [[maybe_unused]]= 36,
     FG_LIGHT_GRAY [[maybe_unused]] = 37,
     FG_DARK_GRAY [[maybe_unused]] = 90,
@@ -65,8 +68,7 @@ public:
 class Time
 {
 public:
-    static std::string getTime()
-    {
+    inline static std::string getTime() {
         std::ostringstream oss;
 
         // Current date/time based on current system.
@@ -87,8 +89,9 @@ public:
 
         return oss.str();
     }
+
 // -----------------------------------------------------------------------------
-    static std::string getDate() {
+    inline static std::string getDate() {
         std::ostringstream oss;
 
         // Current date/time based on current system.
@@ -115,7 +118,7 @@ class Logger
 {
 public:
     enum class LogLevel : char {
-        ERROR = 0, WARNING, INFO
+        TRACE = 0, DEBUG = 1, INFO = 2, WARN = 3, ERROR = 4
     };
     enum class AppendDateTimeFormat : char {
         NONE = 0, TIME_ONLY, DATE_ONLY, DATE_TIME
@@ -123,15 +126,20 @@ public:
 
     Logger() = default;
     explicit Logger(LogLevel logLevel)
-        :m_logLevel(logLevel) {}
+            : m_logLevel(logLevel) {}
+
     Logger(LogLevel logLevel, AppendDateTimeFormat dateTimeFormat)
-        : m_logLevel(logLevel), m_dateTimeFormat(dateTimeFormat) {}
+            : m_logLevel(logLevel), m_dateTimeFormat(dateTimeFormat) {}
 
     virtual ~Logger() = default;
-    Logger(const Logger&) = delete;            // non construction-copyable
-    Logger(Logger&&) = delete;                 // non movable
-    Logger& operator=(const Logger&) = delete; // non copyable
-    Logger& operator=(Logger&&) = delete;      // move assignment
+
+    Logger(const Logger &) = delete;            // non construction-copyable
+    Logger(Logger &&) = delete;                 // non movable
+    Logger &operator=(const Logger &) = delete; // non copyable
+    Logger &operator=(Logger &&) = delete;      // move assignment
+
+protected:
+    std::mutex lock;
 
 private:
     AppendDateTimeFormat m_dateTimeFormat{AppendDateTimeFormat::DATE_TIME};
@@ -139,18 +147,21 @@ private:
 
 public:
     // Setters -----------------------------------------------------------------
-    void setLevel(LogLevel level){m_logLevel = level; }
+    void setLevel(LogLevel level) { m_logLevel = level; }
+
     // -------------------------------------------------------------------------
     void setAppendDateTime(AppendDateTimeFormat level)
     {
         m_dateTimeFormat = level;
     }
+
     // Getters -----------------------------------------------------------------
-    [[nodiscard]] LogLevel getLogLevel() const {return m_logLevel;}
+    [[nodiscard]] LogLevel getLogLevel() const { return m_logLevel; }
+
     // -------------------------------------------------------------------------
-    std::string getDateTimeString()
-    {
+    inline std::string getDateTimeString() {
         std::string date_time;
+        date_time.reserve(32);
 
         switch (m_dateTimeFormat) {
             case AppendDateTimeFormat::TIME_ONLY:
@@ -170,13 +181,17 @@ public:
         return date_time;
     }
 
-    // Pure virtual methods
-    virtual void error(const std::string& message) = 0;
-    // ---------------------------------------------------------------------
-    virtual void warn(const std::string& message) = 0;
-    // ---------------------------------------------------------------------
-    virtual void info(const std::string& message) = 0;
-    // ---------------------------------------------------------------------
+    // Base Logger virtual methods, not pure virtual so you can use
+    // as a null logger if you want.
+    virtual void trace(const std::string &message) {};
+
+    virtual void debug(const std::string &message) {};
+
+    virtual void error(const std::string &message) {};
+
+    virtual void warn(const std::string &message) {};
+
+    virtual void info(const std::string &message) {};
 };
 // -----------------------------------------------------------------------------
 class ConsoleLogger final : public Logger
@@ -204,56 +219,108 @@ public:
              Logger(logLevel){}
 
     [[maybe_unused]] ConsoleLogger(LogLevel logLevel,
-            AppendDateTimeFormat dateTimeFormat,
-            ConsoleColor errorColor,
-            ConsoleColor warnColor,
-            ConsoleColor infoColor)
-            : m_errorColor(errorColor),
-              m_warnColor(warnColor),
-              m_infoColor(infoColor),
-              Logger(logLevel, dateTimeFormat) {}
-
-    [[maybe_unused]] ConsoleLogger(LogLevel logLevel,
-                  AppendDateTimeFormat dateTimeFormat,
-                  ColorizeConsoleOutput colorizeOutput,
-                  ConsoleColor errorColor,
-                  ConsoleColor warnColor,
-                  ConsoleColor infoColor)
-            : m_errorColor(errorColor),
+                                   AppendDateTimeFormat dateTimeFormat,
+                                   ColorizeConsoleOutput colorizeOutput,
+                                   ConsoleColor traceColor,
+                                   ConsoleColor debugColor,
+                                   ConsoleColor errorColor,
+                                   ConsoleColor warnColor,
+                                   ConsoleColor infoColor)
+            : m_traceColor(traceColor),
+              m_debugColor(debugColor),
+              m_errorColor(errorColor),
               m_warnColor(warnColor),
               m_infoColor(infoColor),
               m_colorizeStyle(colorizeOutput),
               Logger(logLevel, dateTimeFormat) {}
 
-ConsoleLogger(const ConsoleLogger&) = delete;      // non construction-copyable
-    ConsoleLogger(ConsoleLogger&&) = delete;                 // non movable
-    ConsoleLogger& operator=(const ConsoleLogger&) = delete; // non copyable
-    ConsoleLogger& operator=(ConsoleLogger&&) = delete;      // move assignment
+    ConsoleLogger(const ConsoleLogger &) = delete;      // non construction-copyable
+    ConsoleLogger(ConsoleLogger &&) = delete;                 // non movable
+    ConsoleLogger &operator=(const ConsoleLogger &) = delete; // non copyable
+    ConsoleLogger &operator=(ConsoleLogger &&) = delete;      // move assignment
 
 private:
     ColorizeConsoleOutput m_colorizeStyle{
             ColorizeConsoleOutput::NO_COLOR};
 
     ConsoleColor m_defaultColor{FG_DEFAULT};
+    ConsoleColor m_traceColor{FG_LIGHT_BLUE};
+    ConsoleColor m_debugColor{FG_DEFAULT};
     ConsoleColor m_errorColor{FG_RED};
     ConsoleColor m_warnColor{FG_GREEN};
     ConsoleColor m_infoColor{FG_YELLOW};
 
 public:
-    // ---------------------------------------------------------------------
-    void setConsoleColourStyle(ColorizeConsoleOutput style)
-    {
+    // -------------------------------------------------------------------------
+    void setConsoleColourStyle(ColorizeConsoleOutput style) {
         m_colorizeStyle = style;
     }
-    // ---------------------------------------------------------------------
-    void error(const std::string& message) override
-    {
-        if (getLogLevel() >= LogLevel::ERROR)
-        {
+
+    // -------------------------------------------------------------------------
+    void trace(const std::string &message) override {
+        /**************************************************************
+         * @brief
+         *
+         * @Note: cout is thread safe, to avoid multiple threads
+         * interleaving on one line though, we make sure to only
+         * call the << operator once on std::cout otherwise the
+         * << operators from different threads could interleave
+         * obviously we dont care if flushes interleave
+         *************************************************************/
+
+        if (getLogLevel() >= LogLevel::TRACE) {
             std::string date_time = getDateTimeString();
 
-            switch (m_colorizeStyle)
-            {
+            switch (m_colorizeStyle) {
+                case ColorizeConsoleOutput::NO_COLOR:
+                    std::cout << m_defaultColor << "[TRACE]: "
+                              << m_defaultColor << message << date_time << '\n';
+                    break;
+                case ColorizeConsoleOutput::LEVEL_ONLY:
+                    std::cout << m_traceColor << "[TRACE]: "
+                              << m_defaultColor << message << date_time << '\n';
+
+                    break;
+                case ColorizeConsoleOutput::ALL:
+                    std::cout << m_traceColor << "[TRACE]: " << message
+                              << date_time << m_defaultColor << '\n';
+                    break;
+            }
+
+            std::cout.flush();
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    void debug(const std::string &message) override {
+        if (getLogLevel() >= LogLevel::DEBUG) {
+            std::string date_time = getDateTimeString();
+
+            switch (m_colorizeStyle) {
+                case ColorizeConsoleOutput::NO_COLOR:
+                    std::cout << m_defaultColor << "[DEBUG]]: "
+                              << m_defaultColor << message << date_time << '\n';
+                    break;
+                case ColorizeConsoleOutput::LEVEL_ONLY:
+                    std::cout << m_debugColor << "[DEBUG]: "
+                              << m_defaultColor << message << date_time << '\n';
+                    break;
+                case ColorizeConsoleOutput::ALL:
+                    std::cout << m_debugColor << "[DEBUG]: " << message
+                              << date_time << m_defaultColor << '\n';
+                    break;
+            }
+
+            std::cout.flush();
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    void error(const std::string &message) override {
+        if (getLogLevel() >= LogLevel::ERROR) {
+            std::string date_time = getDateTimeString();
+
+            switch (m_colorizeStyle) {
                 case ColorizeConsoleOutput::NO_COLOR:
                     std::cout << m_defaultColor << "[ERROR]: "
                               << m_defaultColor << message << date_time << '\n';
@@ -264,20 +331,20 @@ public:
                     break;
                 case ColorizeConsoleOutput::ALL:
                     std::cout << m_errorColor << "[ERROR]: " << message
-                              <<  date_time << '\n';
+                              << date_time << m_defaultColor << '\n';
                     break;
             }
+
+            std::cout.flush();
         }
     }
     // ---------------------------------------------------------------------
     void warn(const std::string& message) override
     {
-        if (getLogLevel() >= LogLevel::WARNING)
-        {
+        if (getLogLevel() >= LogLevel::WARN) {
             std::string date_time = getDateTimeString();
 
-            switch (m_colorizeStyle)
-            {
+            switch (m_colorizeStyle) {
                 case ColorizeConsoleOutput::NO_COLOR:
                     std::cout << m_defaultColor << "[WARNING]: "
                               << m_defaultColor << message << date_time << '\n';
@@ -288,9 +355,11 @@ public:
                     break;
                 case ColorizeConsoleOutput::ALL:
                     std::cout << m_warnColor << "[WARNING]: " << message
-                              <<  date_time << '\n';
+                              << date_time << m_defaultColor << '\n';
                     break;
             }
+
+            std::cout.flush();
         }
     }
     // ---------------------------------------------------------------------
@@ -312,14 +381,53 @@ public:
                     break;
                 case ColorizeConsoleOutput::ALL:
                     std::cout << m_infoColor << "[INFO]: " << message
-                              <<  date_time << '\n';
+                              << date_time << m_defaultColor << '\n';
                     break;
             }
+
+            std::cout.flush();
         }
     }
-    // ---------------------------------------------------------------------
-
 };
+
+    class FileLogger final : public Logger {
+    public:
+        FileLogger() = default;
+
+        explicit FileLogger(std::string filename)
+                : m_filename(std::move(filename)) {
+
+        }
+
+    protected:
+        std::string m_filename;
+        std::ofstream m_file;
+
+    public:
+        void trace(const std::string &message) override {
+            std::cout << "[TRACE]: " << message << '\n';
+        }
+
+        // -------------------------------------------------------------------------
+        void debug(const std::string &message) override {
+            std::cout << "[DEBUG]: " << message << '\n';
+        }
+
+        // -------------------------------------------------------------------------
+        void error(const std::string &message) override {
+            std::cout << "[ERROR]: " << message << '\n';
+        }
+
+        // -------------------------------------------------------------------------
+        void warn(const std::string &message) override {
+            std::cout << "[WARN]: " << message << '\n';
+        }
+
+        // -------------------------------------------------------------------------
+        void info(const std::string &message) override {
+            std::cout << "[INFO]: " << message << '\n';
+        }
+    };
 
 }//namespace gc
 
