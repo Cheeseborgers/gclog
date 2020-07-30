@@ -1,4 +1,6 @@
-# gclog
+# Gclog
+
+A Minimal, Header only, Modern C++ Logger.
 
 ## Dependencies
 
