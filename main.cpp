@@ -1,7 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////
-//      main.cpp                                                            //
+//      Filename: main.hpp                                                    //
 //                                                                            //
+//      Gclog: A Minimal, Header only, Modern C++ Logger.                     //
+//      https://github.com/Cheeseborgers/gclog                                //
 //      Created by Goodecheeseburgers on 28/07/2020.                          //
+//                                                                            //
 //                                                                            //
 //      This program is free software: you can redistribute it and/or modify  //
 //      it under the terms of the GNU General Public License as published by  //

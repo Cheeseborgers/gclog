@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
-//      Logger.hpp                                                            //
+//      Filename: Logger.hpp                                                  //
 //                                                                            //
+//      Gclog: A Minimal, Header only, Modern C++ Logger.                           //
+//      https://github.com/Cheeseborgers/gclog                                //
 //      Created by Goodecheeseburgers on 28/07/2020.                          //
 //                                                                            //
 //      This program is free software: you can redistribute it and/or modify  //
@@ -36,31 +38,31 @@ namespace gc {
         FG_YELLOW [[maybe_unused]] = 33,
         FG_BLUE [[maybe_unused]] = 34,
         FG_MAGENTA [[maybe_unused]] = 35,
-    FG_CYAN [[maybe_unused]]= 36,
-    FG_LIGHT_GRAY [[maybe_unused]] = 37,
-    FG_DARK_GRAY [[maybe_unused]] = 90,
-    FG_LIGHT_RED [[maybe_unused]] = 91,
-    FG_LIGHT_GREEN [[maybe_unused]] = 92,
-    FG_LIGHT_YELLOW [[maybe_unused]] = 93,
-    FG_LIGHT_BLUE [[maybe_unused]] = 94,
-    FG_LIGHT_MAGENTA [[maybe_unused]] = 95,
-    FG_LIGHT_CYAN [[maybe_unused]] = 96,
-    FG_WHITE [[maybe_unused]] = 97,
-    BG_RED [[maybe_unused]] = 41,
-    BG_GREEN [[maybe_unused]] = 42,
-    BG_BLUE [[maybe_unused]] = 44,
-    BG_DEFAULT [[maybe_unused]] = 49
-};
-// -----------------------------------------------------------------------------
-class ConsoleColor
-{
-private:
-    ConsoleColorCode code;
-public:
-    [[maybe_unused]] explicit ConsoleColor(ConsoleColorCode pCode) : code(pCode) {}
+        FG_CYAN [[maybe_unused]] = 36,
+        FG_LIGHT_GRAY [[maybe_unused]] = 37,
+        FG_DARK_GRAY [[maybe_unused]] = 90,
+        FG_LIGHT_RED [[maybe_unused]] = 91,
+        FG_LIGHT_GREEN [[maybe_unused]] = 92,
+        FG_LIGHT_YELLOW [[maybe_unused]] = 93,
+        FG_LIGHT_BLUE [[maybe_unused]] = 94,
+        FG_LIGHT_MAGENTA [[maybe_unused]] = 95,
+        FG_LIGHT_CYAN [[maybe_unused]] = 96,
+        FG_WHITE [[maybe_unused]] = 97,
+        BG_RED [[maybe_unused]] = 41,
+        BG_GREEN [[maybe_unused]] = 42,
+        BG_BLUE [[maybe_unused]] = 44,
+        BG_DEFAULT [[maybe_unused]] = 49
+    };
 
-    friend std::ostream &
-    operator<<(std::ostream &os, const ConsoleColor &mod) {
+// -----------------------------------------------------------------------------
+    class ConsoleColor {
+    private:
+        ConsoleColorCode code;
+    public:
+        [[maybe_unused]] explicit ConsoleColor(ConsoleColorCode pCode) : code(pCode) {}
+
+        friend std::ostream &
+        operator<<(std::ostream &os, const ConsoleColor &mod) {
         return os << "\033[" << mod.code << "m";
     }
 };
@@ -347,15 +349,15 @@ public:
 
             switch (m_colorizeStyle) {
                 case ColorizeConsoleOutput::NO_COLOR:
-                    std::cout << m_defaultColor << "[WARNING]: "
+                    std::cout << m_defaultColor << "[WARN]: "
                               << m_defaultColor << message << date_time << '\n';
                     break;
                 case ColorizeConsoleOutput::LEVEL_ONLY:
-                    std::cout << m_warnColor << "[WARNING]: "
+                    std::cout << m_warnColor << "[WARN]: "
                               << m_defaultColor << message << date_time << '\n';
                     break;
                 case ColorizeConsoleOutput::ALL:
-                    std::cout << m_warnColor << "[WARNING]: " << message
+                    std::cout << m_warnColor << "[WARN]: " << message
                               << date_time << m_defaultColor << '\n';
                     break;
             }
